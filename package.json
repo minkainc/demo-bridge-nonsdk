@@ -1,0 +1,17 @@
+{
+  "name": "demo-bridge-nonsdk",
+  "version": "1.0.0",
+  "description": "excercise to understanding bridge without minka sdk",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Paula Castellanos",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "moment": "^2.30.1",
+    "pg": "^8.13.0"
+  }
+}
