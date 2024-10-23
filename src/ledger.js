@@ -18,7 +18,7 @@ export async function notifyLedger(entry, action, notifyStates) {
     coreId: notifyAction.coreId,
     reason: notifyAction.error.reason,
     detail: notifyAction.error.detail,
-    failId: notifyAction.error.failId,
+    failId: notifyAction.error.failId
   }
   
   const hash = createHash(entry.data.intent.data);
@@ -89,6 +89,7 @@ function importPrivateKey(secret) {
 }
 
 function send(data, id){
+  console.log(`call to endpoint:: ${config.LEDGER_SERVER}/intents/${id}/proofs`)
   axios.post(`${config.LEDGER_SERVER}/intents/${id}/proofs`, data, {
     headers: {
       'x-ledger': config.LEDGER_HANDLE
