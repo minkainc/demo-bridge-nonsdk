@@ -92,7 +92,9 @@ function send(data, id){
   console.log(`call to endpoint:: ${config.LEDGER_SERVER}/intents/${id}/proofs`)
   axios.post(`${config.LEDGER_SERVER}/intents/${id}/proofs`, data, {
     headers: {
-      'x-ledger': config.LEDGER_HANDLE
+      'x-ledger': config.LEDGER_HANDLE,
+      'clientId': config.CLIENT_ID,
+      'clientSecret': config.CLIENT_SECRET
     }
   }).then(res => {
     console.log(res.data)
