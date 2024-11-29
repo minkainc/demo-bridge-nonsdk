@@ -1,5 +1,5 @@
 // Populate this with the wallet handle you created
-const BANK_WALLET = 'test.bank'
+const BANK_WALLET = 'paula.bank'
 const SCHEMA_DEF = 'svgs'
 
 // Factor for usd is 100

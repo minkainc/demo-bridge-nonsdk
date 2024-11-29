@@ -5,5 +5,7 @@ export const config ={
     BRIDGE_PUBLIC: "[Llave pública del bridge que está configurando]",
     BRIDGE_PRIVATE: "[Llave privada del bridge que está configurando]",
     FORMAT: 'ed25519-raw',
-    HASHING_ALGORITHM: 'sha256' 
+    HASHING_ALGORITHM: 'sha256' ,
+    CLIENT_ID: "[clientId]",
+    CLIENT_SECRET: "[clientSecret]"
 }
