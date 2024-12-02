@@ -2,6 +2,7 @@ import { beginActionNew, beginActionExisting, endAction, saveIntent } from './co
 import { notifyLedger } from '../ledger.js'
 import { transactionWrapper, updateEntry } from '../persistence.js'
 import { config } from './../config.js'
+import { validateEntityProofs } from '../cryptoValidator.js'
 
 import {
   extractAndValidateData,
@@ -45,7 +46,10 @@ async function processPrepareCredit(entry) {
       config.LEDGER_PUBLIC,
     )
     validateEntity(entry.data?.intent)
+    
     validateAction(action.action, entry.processingAction)
+    
+    validateEntityProofs(entry);
 
     const { address, symbol, amount } = extractAndValidateData({
       entry,

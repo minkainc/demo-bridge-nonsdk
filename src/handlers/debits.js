@@ -1,6 +1,7 @@
 import {beginActionExisting, beginActionNew, endAction, saveIntent } from './common.js'
 import { notifyLedger } from '../ledger.js'
 import { transactionWrapper, updateEntry } from '../persistence.js'
+import { validateEntityProofs } from '../cryptoValidator.js'
 import {
   extractAndValidateData,
   validateAction,
@@ -18,7 +19,7 @@ export async function prepareDebit(req, res) {
   })
 
   res.sendStatus(202)
-
+  validateEntityProofs(entry);
   if (!alreadyRunning) {
     await processPrepareDebit(entry)
     await endAction(entry)
