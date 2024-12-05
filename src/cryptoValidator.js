@@ -1,6 +1,6 @@
 import crypto from 'crypto'
-import stringify from 'safe-stable-stringify'
 import * as ed25519 from '@noble/ed25519'
+import stringify from 'safe-stable-stringify'
 
 const HASHING_ALGORITHM = 'sha256'
 
@@ -30,7 +30,9 @@ async function verifySignature(hash, proof) {
   try {
     digest = createSignatureDigest(hash, proof.custom)
     valid = proof.digest === digest
-    if (!valid) return valid
+    if (!valid) {
+      return valid
+    }
   } catch (error) {
     throw new Error(error)
   }

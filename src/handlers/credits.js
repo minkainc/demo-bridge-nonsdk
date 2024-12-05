@@ -1,20 +1,19 @@
-import {
-  beginActionNew,
-  beginActionExisting,
-  endAction,
-  saveIntent,
-} from './common.js'
+import core from '../core.js'
+import { validateEntityProofs } from '../cryptoValidator.js'
 import { notifyLedger } from '../ledger.js'
 import { transactionWrapper, updateEntry } from '../persistence.js'
-import { config } from './../config.js'
-import { validateEntityProofs } from '../cryptoValidator.js'
-
 import {
   extractAndValidateData,
   validateAction,
   validateEntity,
 } from '../validators.js'
-import core from '../core.js'
+import { config } from './../config.js'
+import {
+  beginActionExisting,
+  beginActionNew,
+  endAction,
+  saveIntent,
+} from './common.js'
 
 export async function prepareCredit(req, res) {
   const action = 'prepare'
