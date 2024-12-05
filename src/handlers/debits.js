@@ -1,4 +1,9 @@
-import {beginActionExisting, beginActionNew, endAction, saveIntent } from './common.js'
+import {
+  beginActionExisting,
+  beginActionNew,
+  endAction,
+  saveIntent,
+} from './common.js'
 import { notifyLedger } from '../ledger.js'
 import { transactionWrapper, updateEntry } from '../persistence.js'
 import { validateEntityProofs } from '../cryptoValidator.js'
@@ -19,7 +24,7 @@ export async function prepareDebit(req, res) {
   })
 
   res.sendStatus(202)
-  validateEntityProofs(entry);
+  validateEntityProofs(entry)
   if (!alreadyRunning) {
     await processPrepareDebit(entry)
     await endAction(entry)
@@ -81,115 +86,115 @@ async function processPrepareDebit(entry) {
 }
 
 export async function commitDebit(req, res) {
-    const action = 'commit'
-    let { alreadyRunning, entry } = await beginActionExisting({
-      request: req,
-      action,
-      previousStates: ['prepared'],
-    })
-  
-    res.sendStatus(202)
-  
-    if (!alreadyRunning) {
-      await processCommitDebit(entry)
-      await endAction(entry)
-    }
-    await notifyLedger(entry, action, ['committed'])
+  const action = 'commit'
+  let { alreadyRunning, entry } = await beginActionExisting({
+    request: req,
+    action,
+    previousStates: ['prepared'],
+  })
+
+  res.sendStatus(202)
+
+  if (!alreadyRunning) {
+    await processCommitDebit(entry)
+    await endAction(entry)
   }
-  
-  async function processCommitDebit(entry) {
-    const action = entry.actions[entry.processingAction]
-    let transaction
-    try {
-      validateEntity(
-        { hash: action.hash, data: action.data, meta: action.meta },
-        config.LEDGER_PUBLIC,
-      )
-      validateAction(action.action, entry.processingAction)
-  
+  await notifyLedger(entry, action, ['committed'])
+}
+
+async function processCommitDebit(entry) {
+  const action = entry.actions[entry.processingAction]
+  let transaction
+  try {
+    validateEntity(
+      { hash: action.hash, data: action.data, meta: action.meta },
+      config.LEDGER_PUBLIC,
+    )
+    validateAction(action.action, entry.processingAction)
+
+    transaction = core.release(
+      Number(entry.account),
+      entry.amount,
+      `${entry.handle}-release`,
+    )
+    action.coreId = transaction.id.toString()
+
+    if (transaction.status !== 'COMPLETED') {
+      throw new Error(transaction.errorReason)
+    }
+
+    transaction = core.debit(
+      Number(entry.account),
+      entry.amount,
+      `${entry.handle}-debit`,
+    )
+    action.coreId = transaction.id.toString()
+
+    if (transaction.status !== 'COMPLETED') {
+      throw new Error(transaction.errorReason)
+    }
+
+    action.state = 'committed'
+  } catch (error) {
+    console.log(error)
+    action.state = 'error'
+    action.error = {
+      reason: 'bridge.unexpected-error',
+      detail: error.message,
+      failId: undefined,
+    }
+  }
+}
+
+export async function abortDebit(req, res) {
+  const action = 'abort'
+  let { alreadyRunning, entry } = await beginActionExisting({
+    request: req,
+    action,
+    previousStates: ['prepared', 'failed'],
+  })
+
+  res.sendStatus(202)
+
+  if (!alreadyRunning) {
+    await processAbortDebit(entry)
+    await endAction(entry)
+  }
+
+  await notifyLedger(entry, action, ['aborted'])
+}
+
+async function processAbortDebit(entry) {
+  const action = entry.actions[entry.processingAction]
+  let transaction
+  try {
+    validateEntity(
+      { hash: action.hash, data: action.data, meta: action.meta },
+      config.LEDGER_PUBLIC,
+    )
+    validateAction(action.action, entry.processingAction)
+
+    if (entry.previousState === 'prepared') {
       transaction = core.release(
         Number(entry.account),
         entry.amount,
         `${entry.handle}-release`,
       )
       action.coreId = transaction.id.toString()
-  
-      if (transaction.status !== 'COMPLETED') {
-        throw new Error(transaction.errorReason)
-      }
-  
-      transaction = core.debit(
-        Number(entry.account),
-        entry.amount,
-        `${entry.handle}-debit`,
-      )
-      action.coreId = transaction.id.toString()
-  
-      if (transaction.status !== 'COMPLETED') {
-        throw new Error(transaction.errorReason)
-      }
-  
-      action.state = 'committed'
-    } catch (error) {
-      console.log(error)
-      action.state = 'error'
-      action.error = {
-        reason: 'bridge.unexpected-error',
-        detail: error.message,
-        failId: undefined,
-      }
-    }
-  }
 
-  export async function abortDebit(req, res) {
-    const action = 'abort'
-    let { alreadyRunning, entry } = await beginActionExisting({
-      request: req,
-      action,
-      previousStates: ['prepared', 'failed'],
-    })
-  
-    res.sendStatus(202)
-  
-    if (!alreadyRunning) {
-      await processAbortDebit(entry)
-      await endAction(entry)
-    }
-  
-    await notifyLedger(entry, action, ['aborted'])
-  }
-  
-  async function processAbortDebit(entry) {
-    const action = entry.actions[entry.processingAction]
-    let transaction
-    try {
-      validateEntity(
-        { hash: action.hash, data: action.data, meta: action.meta },
-        config.LEDGER_PUBLIC,
-      )
-      validateAction(action.action, entry.processingAction)
-  
-      if (entry.previousState === 'prepared') {
-        transaction = core.release(
-          Number(entry.account),
-          entry.amount,
-          `${entry.handle}-release`,
-        )
-        action.coreId = transaction.id.toString()
-  
-        if (transaction.status !== 'COMPLETED') {
-          throw new Error(transaction.errorReason)
-        }
-      }
-  
-      action.state = 'aborted'
-    } catch (error) {
-      console.log(error)
-      action.state = 'error'
-      action.error = {
-        reason: 'bridge.unexpected-error',
-        detail: error.message,
-        failId: undefined,
+      if (transaction.status !== 'COMPLETED') {
+        throw new Error(transaction.errorReason)
       }
     }
+
+    action.state = 'aborted'
+  } catch (error) {
+    console.log(error)
+    action.state = 'error'
+    action.error = {
+      reason: 'bridge.unexpected-error',
+      detail: error.message,
+      failId: undefined,
+    }
   }
+}

@@ -1,8 +1,7 @@
-import stringify from 'safe-stable-stringify';
-import crypto from 'node:crypto';
-import axios from 'axios';
+import stringify from 'safe-stable-stringify'
+import crypto from 'node:crypto'
+import axios from 'axios'
 import { config } from './config.js'
-
 
 // This function is used to notify Ledger of Entry processing final statuses.
 export async function notifyLedger(entry, action, notifyStates) {
@@ -12,22 +11,25 @@ export async function notifyLedger(entry, action, notifyStates) {
     return
   }
   const custom = {
-    moment: (new Date).toISOString(),
+    moment: new Date().toISOString(),
     handle: entry.handle,
     status: notifyAction.state,
     coreId: notifyAction.coreId,
     reason: notifyAction.error.reason,
     detail: notifyAction.error.detail,
-    failId: notifyAction.error.failId
+    failId: notifyAction.error.failId,
   }
-  
-  const hash = createHash(entry.data.intent.data);
-  const data = signHash(hash, custom, config.BRIDGE_PUBLIC, config.BRIDGE_PRIVATE);
 
-  send(data, entry.data.intent.data.handle);
+  const hash = createHash(entry.data.intent.data)
+  const data = signHash(
+    hash,
+    custom,
+    config.BRIDGE_PUBLIC,
+    config.BRIDGE_PRIVATE,
+  )
 
+  send(data, entry.data.intent.data.handle)
 }
-
 
 function createHash(data) {
   const serializedData = stringify(data)
@@ -37,23 +39,20 @@ function createHash(data) {
     .digest('hex')
 }
 
-function createSignatureDigest(dataHash,signatureCustom) {
+function createSignatureDigest(dataHash, signatureCustom) {
   // Serialize the custom data, if it exists
-  const serializedCustomData = signatureCustom ?stringify(signatureCustom) :'';
+  const serializedCustomData = signatureCustom ? stringify(signatureCustom) : ''
 
   // Create a hash by concatenating the data hash
   // with serialized custom data
   return crypto
     .createHash(config.HASHING_ALGORITHM)
     .update(dataHash + serializedCustomData)
-    .digest('hex');
+    .digest('hex')
 }
 
 function signHash(hash, custom, publicKey, secretKey) {
-  const digest = createSignatureDigest(
-    hash,
-    custom
-  )
+  const digest = createSignatureDigest(hash, custom)
 
   const digestBuffer = Buffer.from(digest, 'hex')
   const key = importPrivateKey(secretKey)
@@ -88,17 +87,20 @@ function importPrivateKey(secret) {
   })
 }
 
-function send(data, id){
+function send(data, id) {
   console.log(`call to endpoint:: ${config.LEDGER_SERVER}/intents/${id}/proofs`)
-  axios.post(`${config.LEDGER_SERVER}/intents/${id}/proofs`, data, {
-    headers: {
-      'x-ledger': config.LEDGER_HANDLE,
-      'clientId': config.CLIENT_ID,
-      'clientSecret': config.CLIENT_SECRET
-    }
-  }).then(res => {
-    console.log(res.data)
-  }).catch(err => {
-    console.error(err.response.data)
-  })
+  axios
+    .post(`${config.LEDGER_SERVER}/intents/${id}/proofs`, data, {
+      headers: {
+        'x-ledger': config.LEDGER_HANDLE,
+        clientId: config.CLIENT_ID,
+        clientSecret: config.CLIENT_SECRET,
+      },
+    })
+    .then((res) => {
+      console.log(res.data)
+    })
+    .catch((err) => {
+      console.error(err.response.data)
+    })
 }

@@ -24,7 +24,9 @@ export function extractAndValidateAddress(address) {
     )
   }
   if (schema !== SCHEMA_DEF) {
-    throw new Error(`Expected address schema to be ${SCHEMA_DEF}, got ${schema}`)
+    throw new Error(
+      `Expected address schema to be ${SCHEMA_DEF}, got ${schema}`,
+    )
   }
   if (!account || account.length === 0) {
     throw new Error('Account missing from credit request')
@@ -71,7 +73,8 @@ export function extractAndValidateData({ entry, schema }) {
 
   validateSchema(data?.schema, schema)
 
-  const rawAddress = data?.schema === 'credit' ? data.target.handle : data.source.handle
+  const rawAddress =
+    data?.schema === 'credit' ? data.target.handle : data.source.handle
   const address = extractAndValidateAddress(rawAddress)
   const amount = extractAndValidateAmount(data.amount)
   const symbol = extractAndValidateSymbol(data.symbol.handle)

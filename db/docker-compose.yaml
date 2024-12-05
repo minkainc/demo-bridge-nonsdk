@@ -1,4 +1,4 @@
-version: "3.3"
+version: '3.3'
 services:
   bridge-postgres:
     restart: always
@@ -7,7 +7,7 @@ services:
       - ./var/pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5433:5432"
+      - '5433:5432'
     environment:
       - POSTGRES_USER=bridge-service
       - POSTGRES_PASSWORD=bridge-service

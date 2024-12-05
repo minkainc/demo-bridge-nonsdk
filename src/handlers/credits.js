@@ -1,4 +1,9 @@
-import { beginActionNew, beginActionExisting, endAction, saveIntent } from './common.js'
+import {
+  beginActionNew,
+  beginActionExisting,
+  endAction,
+  saveIntent,
+} from './common.js'
 import { notifyLedger } from '../ledger.js'
 import { transactionWrapper, updateEntry } from '../persistence.js'
 import { config } from './../config.js'
@@ -12,7 +17,6 @@ import {
 import core from '../core.js'
 
 export async function prepareCredit(req, res) {
-  
   const action = 'prepare'
 
   // Begin Action processing for new Entry which will also save it.
@@ -46,10 +50,10 @@ async function processPrepareCredit(entry) {
       config.LEDGER_PUBLIC,
     )
     validateEntity(entry.data?.intent)
-    
+
     validateAction(action.action, entry.processingAction)
-    
-    validateEntityProofs(entry);
+
+    validateEntityProofs(entry)
 
     const { address, symbol, amount } = extractAndValidateData({
       entry,
@@ -111,15 +115,15 @@ async function processCommitCredit(entry) {
   let transaction
   try {
     validateEntity(
-        { hash: action.hash, data: action.data, meta: action.meta },
-        config.LEDGER_PUBLIC,
+      { hash: action.hash, data: action.data, meta: action.meta },
+      config.LEDGER_PUBLIC,
     )
     validateAction(action.action, entry.processingAction)
 
     transaction = core.credit(
-        Number(entry.account),
-        entry.amount,
-        `${entry.handle}-credit`,
+      Number(entry.account),
+      entry.amount,
+      `${entry.handle}-credit`,
     )
     action.coreId = transaction.id.toString()
 
@@ -176,4 +180,4 @@ async function processAbortCredit(entry) {
       failId: undefined,
     }
   }
-} 
+}
