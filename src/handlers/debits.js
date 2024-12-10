@@ -24,7 +24,7 @@ export async function prepareDebit(req, res) {
   })
 
   res.sendStatus(202)
-  validateEntityProofs(entry)
+  await validateEntityProofs(entry)
   if (!alreadyRunning) {
     await processPrepareDebit(entry)
     await endAction(entry)

@@ -52,7 +52,7 @@ async function processPrepareCredit(entry) {
 
     validateAction(action.action, entry.processingAction)
 
-    validateEntityProofs(entry)
+    await validateEntityProofs(entry)
 
     const { address, symbol, amount } = extractAndValidateData({
       entry,

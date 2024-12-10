@@ -1,6 +1,6 @@
 // Populate this with the wallet handle you created
-const BANK_WALLET = 'paula.bank'
-const SCHEMA_DEF = 'svgs'
+const BANK_WALLET = 'mintbank.dev'
+const SCHEMA_DEF = 'caho'
 
 // Factor for usd is 100
 const USD_FACTOR = 100
@@ -50,7 +50,7 @@ export function extractAndValidateAmount(rawAmount) {
 export function extractAndValidateSymbol(symbol) {
   // In general symbols other than usd are possible, but
   // we only support usd in the tutorial
-  if (symbol !== 'usd') {
+  if (symbol !== 'cop') {
     throw new Error(`Symbol usd expected, got ${symbol}`)
   }
   return symbol

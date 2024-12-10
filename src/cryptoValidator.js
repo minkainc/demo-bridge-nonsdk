@@ -20,19 +20,18 @@ export async function validateEntityProofs(record) {
       }
     }
   } catch (error) {
-    throw new Error(error)
+    throw error; 
   }
 }
 
 async function verifySignature(hash, proof) {
-  var digest
-  var valid = false
+  let digest;
+  
   try {
     digest = createSignatureDigest(hash, proof.custom)
-    valid = proof.digest === digest
-    if (!valid) {
-      return valid
-    }
+  if (proof.digest !== digest) {
+      return false;
+   }  
   } catch (error) {
     throw new Error(error)
   }
@@ -43,13 +42,7 @@ async function verifySignature(hash, proof) {
     )
   }
 
-  valid = await ed25519.verify(
-    Buffer.from(proof.result, 'base64'),
-    digest,
-    Buffer.from(proof.public, 'base64'),
-  )
-
-  return valid
+  return await ed25519.verify(Buffer.from(proof.result, 'base64'),digest,Buffer.from(proof.public, 'base64'));
 }
 
 function createSignatureDigest(hash, custom) {
